@@ -1,0 +1,13 @@
+Lista de dependencias
+
+- express (framework para construir nuestro servidor API)
+- mongoose
+- cors (para resolver problemas de comunicacion con el frontend, origenes distintos)
+- bcrypt (para hashear las contrasenas)
+- jsonwebtoken (Para manejar toda la autenticacion)
+- dotenv (variables de ambiente) (en lugar de usar dotenv,trabajar con variables nativas de NODE, sin la necesidad de dependencias externas)
+- winston (loggers)
+- swagger (Documentacion de APIS) Opcional
+- jest (Pruebas unitarias) Opcional
+- commitlint (Commits convencionales)
+- husky (Formatear commits antes de permitir el commit)

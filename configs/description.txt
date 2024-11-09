@@ -1,0 +1,8 @@
+Podemos tener un archivo de configuraciones para cargar las variables de ambiente
+- En estas variables deben definir los parametros de conexion a la BDD
+- 'mondodb+srv: prios:admin1234'
+`mongodb+srv://${USERNAME}:${PASSWORD}`
+USERNAME como variable de ambiente
+-PASSWORD como variable de ambbiente
+DB_NAME como variable de ambiente
+Utilizar estos parametros dentro de un template string

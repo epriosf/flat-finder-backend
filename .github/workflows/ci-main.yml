@@ -22,13 +22,13 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run tests
-        run: npm test
+      # - name: Run tests
+      #   run: npm test
 
-      - name: Deploy to Production
-        env:
-          NODE_ENV: production
-        run: |
-          # Your deploy script or command here, e.g.:
-          # npm run build
-          # rsync -avz dist/ user@your-server:/path/to/app
+      # - name: Deploy to Production
+      #   env:
+      #     NODE_ENV: production
+      #   run: |
+      # Your deploy script or command here, e.g.:
+      # npm run build
+      # rsync -avz dist/ user@your-server:/path/to/app

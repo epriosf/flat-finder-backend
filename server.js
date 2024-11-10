@@ -5,3 +5,13 @@
 //3.- Llamar a nuestro archivo de conexion a la BDD
 //4.- Podemos agregar un middleware global -> cors
 //5.- El server se comunica con la capa de ruteo (routes)
+import cors from 'cors';
+import express from 'express';
+const app = express();
+
+app.use(express.json());
+app.use(cors());
+
+app.listen(8080, () => {
+  console.log(`Server running on port 8080`);
+});

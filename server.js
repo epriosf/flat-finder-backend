@@ -7,11 +7,13 @@
 //5.- El server se comunica con la capa de ruteo (routes)
 import cors from 'cors';
 import express from 'express';
+import { connectDB } from './db/db.js';
 const app = express();
 
 app.use(express.json());
 app.use(cors());
+connectDB();
 
-app.listen(8080, () => {
-  console.log(`Server running on port 8080`);
+app.listen(process.env.PORT, () => {
+  console.log(`Server running on port ${process.env.PORT}`);
 });

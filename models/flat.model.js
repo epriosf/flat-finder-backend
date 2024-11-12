@@ -1,54 +1,54 @@
-import mongoose from 'mongoose';
+import mongoose from 'mongoose'
 
 //definir el schema de la base de datos para la coleccion de usuarios
 const flatSchema = new mongoose.Schema({
   city: {
     type: String,
     required: true,
-    unique: true,
+    unique: true
   },
   streetName: {
     type: String,
-    required: true,
+    required: true
   },
   streetNumber: {
     type: String,
-    required: true,
+    required: true
   },
   areaSize: {
     type: Number,
-    required: true,
+    required: true
   },
   hasAc: {
     type: Number,
-    required: true,
+    required: true
   },
   yearBuilt: {
-    type: Number,
+    type: Number
   },
   rentPrice: {
     type: Number,
-    required: true,
+    required: true
   },
   dateAvailable: {
-    type: Date,
+    type: Date
   },
   created: {
     type: Date,
-    default: Date.now,
+    default: Date.now
   },
   updated: {
     type: Date,
-    default: Date.now,
+    default: Date.now
   },
 
   deleted: {
-    type: Date,
+    type: Date
   },
   ownerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-  },
+    ref: 'User'
+  }
   //El proyecto pide un borrado fisico, pero mejor es hacer un borrado logico
-});
-export const User = mongoose.model('User', userSchema);
+})
+export const User = mongoose.model('User', flatSchema)

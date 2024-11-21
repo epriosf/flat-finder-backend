@@ -1,6 +1,5 @@
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 
-//definir el schema de la base de datos para la coleccion de usuarios
 const flatSchema = new mongoose.Schema(
   {
     city: {
@@ -8,13 +7,13 @@ const flatSchema = new mongoose.Schema(
       required: [true, 'city is required'],
       unique: true,
       trim: true,
-      lowercase: true
+      lowercase: true,
     },
     streetName: {
       type: String,
       required: [true, 'streetName is required'],
       trim: true,
-      minlength: [3, 'Street name must have at least 3 characters.']
+      minlength: [3, 'Street name must have at least 3 characters.'],
     },
     streetNumber: {
       type: String,
@@ -22,31 +21,38 @@ const flatSchema = new mongoose.Schema(
       trim: true,
       match: [
         /^\d+[A-Za-z]?$/,
-        'Street number must be a valid number or alphanumeric (e.g., 123A).'
-      ]
+        'Street number must be a valid number or alphanumeric (e.g., 123A).',
+      ],
     },
     areaSize: {
       type: Number,
       required: [true, 'areaSize is required'],
       trim: true,
-      min: [10, 'Area size must be at least 10 square meters.']
+      min: [10, 'Area size must be at least 10 square meters.'],
     },
     hasAc: {
       type: Boolean,
-      required: [true, 'hasAc is required']
+      required: [true, 'hasAc is required'],
     },
     yearBuilt: {
       type: Number,
-      required: [true, 'yearBuilt is required']
+      required: [true, 'yearBuilt is required'],
     },
     rentPrice: {
       type: Number,
       required: [true, 'rentPrice is required'],
       trim: true,
-      min: [0, 'Rent price must be a positive number.']
+      min: [0, 'Rent price must be a positive number.'],
     },
     dateAvailable: {
-      type: Date
+      type: [Date],
+      validate: {
+        validator: function (value) {
+          return value.length === 2;
+        },
+        message:
+          'dateAvailable must contain exactly two dates (initial and final).',
+      },
     },
     // ownerId: {
     //   type: mongoose.Schema.Types.ObjectId,
@@ -55,14 +61,14 @@ const flatSchema = new mongoose.Schema(
 
     deleted: {
       type: Date,
-      default: null
-    }
+      default: null,
+    },
   },
   { timestamps: true }
-)
+);
 // Middleware for updated field
 flatSchema.pre('save', async function (next) {
-  this.updated = new Date()
-  next()
-})
-export const Flat = mongoose.model('Flat', flatSchema)
+  this.updated = new Date();
+  next();
+});
+export const Flat = mongoose.model('Flat', flatSchema);

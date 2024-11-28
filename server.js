@@ -10,6 +10,7 @@ import express from 'express';
 import { connectDB } from './db/db.js';
 import errorHandler from './middlewares/errorHandler.js';
 import flatRoutes from './routes/flat.router.js';
+import userRoutes from './routes/user.router.js';
 const app = express();
 
 app.use(express.json());
@@ -17,6 +18,7 @@ app.use(cors());
 connectDB();
 
 app.use('/flats', flatRoutes);
+app.use('/users', userRoutes);
 
 //Middleware for error handling
 app.use(errorHandler);

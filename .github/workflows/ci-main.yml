@@ -30,6 +30,7 @@ jobs:
         env:
           NODE_ENV: production
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }} # Optional
-          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }} # Optional
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
         run: yarn vercel --prod --token $VERCEL_TOKEN

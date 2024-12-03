@@ -1,4 +1,5 @@
 import express from 'express';
+import { verifyFlatOwnership } from '../middlewares/verifyFlatOwnership.js';
 import {
   deleteFlat,
   getFlatById,
@@ -10,6 +11,6 @@ const router = express.Router();
 router.get('/', getFlats);
 router.get('/:id', getFlatById);
 router.post('', saveFlat);
-router.put('/:id', updateFlat);
-router.delete('/:id', deleteFlat);
+router.put('/:id', verifyFlatOwnership, updateFlat);
+router.delete('/:id', verifyFlatOwnership, deleteFlat);
 export default router;

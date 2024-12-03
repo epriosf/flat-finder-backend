@@ -8,7 +8,9 @@
 import cors from 'cors';
 import express from 'express';
 import { connectDB } from './db/db.js';
+import authenticationMiddleware from './middlewares/authentication.middleware.js';
 import errorHandler from './middlewares/errorHandler.js';
+import authRoutes from './routes/auth.router.js';
 import flatRoutes from './routes/flat.router.js';
 import messagesRoutes from './routes/message.router.js';
 import userRoutes from './routes/user.router.js';
@@ -23,9 +25,10 @@ app.get('/', (req, res) => {
   res.send('Server is running!');
 });
 
-app.use('/flats', flatRoutes);
-app.use('/messages', messagesRoutes);
-app.use('/users', userRoutes);
+app.use('/flats', authenticationMiddleware, flatRoutes);
+app.use('/messages', authenticationMiddleware, messagesRoutes);
+app.use('/users', authenticationMiddleware, userRoutes);
+app.use('/auth', authRoutes);
 
 //Middleware for error handling
 app.use(errorHandler);

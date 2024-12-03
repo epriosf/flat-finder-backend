@@ -1,5 +1,6 @@
 import { buildFilters } from '../utils/filterBuilder.js';
 import { flatSchema } from '../utils/flat.validator.js';
+import { flatSaveSchema } from '../utils/flatSave.validator.js';
 import { Flat } from './../models/flat.model.js';
 
 const getFlats = async (req, res, next) => {
@@ -64,7 +65,7 @@ const getFlatById = async (req, res, next) => {
 
 const saveFlat = async (req, res, next) => {
   try {
-    const { error } = flatSchema.validate(req.body);
+    const { error } = flatSaveSchema.validate(req.body);
     if (error) {
       return res.status(400).json({ message: error.message });
     }
@@ -81,6 +82,7 @@ const saveFlat = async (req, res, next) => {
 const updateFlat = async (req, res, next) => {
   try {
     const { id } = req.params;
+
     const flatData = req.body;
 
     const updatedFlat = await Flat.findOneAndUpdate(

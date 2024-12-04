@@ -1,5 +1,5 @@
 import Joi from 'joi';
-const querySchema = Joi.object({
+const flatSchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(100).default(10),
   city: Joi.string().trim().optional(),
@@ -12,4 +12,4 @@ const querySchema = Joi.object({
   order: Joi.string().valid('asc', 'desc').default('asc'),
 });
 
-export { querySchema };
+export { flatSchema };

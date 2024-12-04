@@ -12,6 +12,7 @@ import authenticationMiddleware from './middlewares/authentication.middleware.js
 import errorHandler from './middlewares/errorHandler.js';
 import authRoutes from './routes/auth.router.js';
 import flatRoutes from './routes/flat.router.js';
+import logsRoutes from './routes/logs.router.js';
 import messagesRoutes from './routes/message.router.js';
 import userRoutes from './routes/user.router.js';
 const app = express();
@@ -29,6 +30,7 @@ app.use('/flats', authenticationMiddleware, flatRoutes);
 app.use('/messages', authenticationMiddleware, messagesRoutes);
 app.use('/users', authenticationMiddleware, userRoutes);
 app.use('/auth', authRoutes);
+app.use('/logs', logsRoutes);
 
 //Middleware for error handling
 app.use(errorHandler);

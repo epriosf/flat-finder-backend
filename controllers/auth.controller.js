@@ -2,10 +2,12 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/user.model.js';
 import sendEmail from '../utils/email.js';
-
+import { loginSchema, registerSchema } from '../utils/user.validator.js';
 const register = async (req, res) => {
   try {
-    const user = new User(req.body);
+    const validatedBody = await registerSchema.validateAsync(req.body);
+
+    const user = new User(validatedBody);
     await user.save();
     res.status(201).json(user);
   } catch (error) {
@@ -15,10 +17,14 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
+    const { error } = loginSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
     //1.- Vamos a obtener las credenciales (username, password) del request
-    const { username, password } = req.body;
+    const { email, password } = req.body;
     //2.- Vamos a buscar el usuario en la BDD, si no existe vamos a retornar un 404
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }

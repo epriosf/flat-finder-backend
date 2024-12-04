@@ -14,7 +14,6 @@ const getFlats = async (req, res, next) => {
         .json({ message: `Invalid query parameters: ${error.message}` });
     }
     // Filters
-    //  const filters = buildFilters(query);
     const filters = { ...buildFilters(query), deleted: { $eq: null } };
     //Sorting
     const sort = { [query.sort]: query.order === 'desc' ? -1 : 1 };
@@ -84,6 +83,9 @@ const updateFlat = async (req, res, next) => {
     const { id } = req.params;
 
     const flatData = req.body;
+    if (flatData.ownerId) {
+      return res.status(400).json({ message: 'Cannot update ownerId' });
+    }
 
     const updatedFlat = await Flat.findOneAndUpdate(
       { _id: id, deleted: { $eq: null } },
@@ -99,6 +101,7 @@ const updateFlat = async (req, res, next) => {
       .status(200)
       .json({ message: 'Flat updated successfully', data: updatedFlat });
   } catch (error) {
+    console.log('Error updating flat:', error);
     next(error);
   }
 };

@@ -10,8 +10,8 @@ import {
 
 const router = express.Router();
 
-router.post('/register', register);
-router.post('/login', login);
+router.post('/users/register', register);
+router.post('/users/login', login);
 router.post('/forgot-password', forgotPassword);
 router.put('/reset-password/:token', resetPassword);
 

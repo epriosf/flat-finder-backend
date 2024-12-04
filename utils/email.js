@@ -6,8 +6,8 @@ import nodemailer from 'nodemailer';
 const sendEmail = async (options) => {
   //vamos a crear la integracion con el servicio de mailtrap usando nodemailer
   const transporter = nodemailer.createTransport({
-    host: 'live.smtp.mailtrap.io',
-    port: 587,
+    host: process.env.HOST_MAITRAP,
+    port: process.env.PORT_MAILTRAP,
     auth: {
       user: process.env.MAILTRAP_USER,
       pass: process.env.MAILTRAP_PASS,
@@ -16,7 +16,7 @@ const sendEmail = async (options) => {
 
   //Vamos a armar las opciones de envio de nuestro correo
   const mailOptions = {
-    from: '"Kruger Backend" <no-reply@demomailtrap.com>',
+    from: '"FlatFinder Backend" <no-reply@demomailtrap.com>',
     to: options.email,
     subject: options.subject,
     text: options.message,

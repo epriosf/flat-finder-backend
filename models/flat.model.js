@@ -54,10 +54,11 @@ const flatSchema = new mongoose.Schema(
           'dateAvailable must contain exactly two dates (initial and final).',
       },
     },
-    // ownerId: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: 'User'
-    // },
+    ownerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'User is required'],
+    },
 
     deleted: {
       type: Date,

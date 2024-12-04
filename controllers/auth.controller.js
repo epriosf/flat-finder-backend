@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/user.model.js';
 import sendEmail from '../utils/email.js';
+import logger from '../utils/logger.js';
 import { loginSchema, registerSchema } from '../utils/user.validator.js';
 const register = async (req, res) => {
   try {
@@ -11,6 +12,7 @@ const register = async (req, res) => {
     await user.save();
     res.status(201).json(user);
   } catch (error) {
+    logger.error('Error during user registration', { error: error.message });
     res.status(400).json({ message: error.message });
   }
 };
@@ -19,6 +21,9 @@ const login = async (req, res) => {
   try {
     const { error } = loginSchema.validate(req.body);
     if (error) {
+      logger.warning('Validation error during login', {
+        error: error.details[0].message,
+      });
       return res.status(400).json({ message: error.details[0].message });
     }
     //1.- Vamos a obtener las credenciales (username, password) del request
@@ -26,12 +31,14 @@ const login = async (req, res) => {
     //2.- Vamos a buscar el usuario en la BDD, si no existe vamos a retornar un 404
     const user = await User.findOne({ email });
     if (!user) {
+      logger.warn('Login failed: User not found', { email });
       return res.status(404).json({ message: 'User not found' });
     }
     //3.- Vamos a comparar la contraseña que viene en el request con la contraseña hasheada que tenemos en la BDD
     const passwordsMatch = await user.comparePasswords(password);
     //4.- Si las contraseñas no coinciden, vamos a retornar un 401
     if (!passwordsMatch) {
+      logger.warning('Login failed: Invalid credentials', { email });
       return res.status(401).json({ message: 'Invalid credentials' });
     }
     //5.- Si las contraseñas coinciden, vamos a generar un token JWT y lo vamos a retornar en la respuesta
@@ -48,6 +55,7 @@ const login = async (req, res) => {
     );
     res.status(200).json({ token });
   } catch (error) {
+    logger.error('Error during login', { error: error.message });
     res.status(500).json({ message: error.message });
   }
 };
@@ -59,6 +67,7 @@ const forgotPassword = async (req, res) => {
     //1. Vamos a validar si el correo que esta enviando existe o esta alamacenado en la BDD
     const user = await User.findOne({ email });
     if (!user) {
+      logger.warning('Forgot password failed: User not found', { email });
       return res.status(404).json({ message: 'User not found' });
     }
 
@@ -86,6 +95,9 @@ const forgotPassword = async (req, res) => {
       res.status(500).json({ message: error.message });
     }
   } catch (error) {
+    logger.error('Error sending password reset email', {
+      error: error.message,
+    });
     res.status(500).json({ message: error.message });
   }
 };
@@ -111,6 +123,7 @@ const resetPassword = async (req, res) => {
 
     //5.- Validar si el usuario que estamos buscando existe o no
     if (!user) {
+      logger.warning('Reset password failed: Invalid or expired token');
       return res.status(400).json({ message: 'Invalid or expired token' });
     }
 
@@ -123,6 +136,7 @@ const resetPassword = async (req, res) => {
 
     res.json({ message: 'Password updated' });
   } catch (error) {
+    logger.error('Error during password reset', { error: error.message });
     res.status(500).json({ message: error.message });
   }
 };

@@ -1,14 +1,14 @@
 import { buildFilters } from '../utils/filterBuilder.js';
 import { flatSchema } from '../utils/flat.validator.js';
 import { flatSaveSchema } from '../utils/flatSave.validator.js';
+import logger from '../utils/logger.js';
 import { Flat } from './../models/flat.model.js';
-
 const getFlats = async (req, res, next) => {
   try {
     // Validate query parameters
     const { value: query, error } = flatSchema.validate(req.query);
     if (error) {
-      console.log(`Invalid query parameters: ${error.message}`);
+      logger.warning(`Invalid query parameters: ${error.message}`);
       return res
         .status(400)
         .json({ message: `Invalid query parameters: ${error.message}` });
@@ -39,25 +39,25 @@ const getFlats = async (req, res, next) => {
         hasPreviousPage: query.page > 1,
       },
     });
-
-    console.log(
-      `Successfully fetched flats for page ${query.page} with limit ${query.limit}`
-    );
   } catch (error) {
+    logger.error(`Error fetching flats: ${error.message}`);
     next(error);
   }
 };
 const getFlatById = async (req, res, next) => {
+  const { id } = req.params;
+
   try {
-    const { id } = req.params;
     const flat = await Flat.findOne({ _id: id, deleted: { $eq: null } });
 
     if (!flat) {
+      logger.warning(`Flat not found with ID: ${id}`);
       return res.status(404).json({ message: 'Flat not found' });
     }
 
     res.status(200).json(flat);
   } catch (error) {
+    logger.error(`Error fetching flat with ID:${id}, Error: ${error.message}`);
     next(error);
   }
 };
@@ -74,16 +74,17 @@ const saveFlat = async (req, res, next) => {
       .status(201)
       .json({ message: 'Flat created successfully', data: newFlat });
   } catch (error) {
+    logger.error(`Error saving flat: ${error.message}`);
     next(error);
   }
 };
 
 const updateFlat = async (req, res, next) => {
+  const { id } = req.params;
   try {
-    const { id } = req.params;
-
     const flatData = req.body;
     if (flatData.ownerId) {
+      logger.warning(`Attempt to update ownerId of flat with ID: ${id}`);
       return res.status(400).json({ message: 'Cannot update ownerId' });
     }
 
@@ -94,6 +95,7 @@ const updateFlat = async (req, res, next) => {
     );
 
     if (!updatedFlat) {
+      logger.warning(`Flat not found for update with ID: ${id}`);
       return res.status(404).json({ message: 'Flat not found' });
     }
 
@@ -101,15 +103,15 @@ const updateFlat = async (req, res, next) => {
       .status(200)
       .json({ message: 'Flat updated successfully', data: updatedFlat });
   } catch (error) {
-    console.log('Error updating flat:', error);
+    logger.error(`Error updating flat with ID: ${id}, Error: ${error.message}`);
     next(error);
   }
 };
 
 const deleteFlat = async (req, res, next) => {
-  try {
-    const { id } = req.params;
+  const { id } = req.params;
 
+  try {
     const deletedFlat = await Flat.findOneAndUpdate(
       { _id: id, deleted: { $eq: null } },
       { deleted: new Date() },
@@ -117,6 +119,7 @@ const deleteFlat = async (req, res, next) => {
     );
 
     if (!deletedFlat) {
+      logger.warning(`Flat not found or already deleted with ID: ${id}`);
       return res
         .status(404)
         .json({ message: 'Flat not found or already deleted' });
@@ -125,8 +128,10 @@ const deleteFlat = async (req, res, next) => {
       .status(200)
       .json({ message: 'Flat deleted successfully', data: deletedFlat });
   } catch (error) {
+    logger.error(`Error deleting flat with ID: ${id}, Error: ${error.message}`);
     next(error);
   }
 };
 
 export { deleteFlat, getFlatById, getFlats, saveFlat, updateFlat };
+

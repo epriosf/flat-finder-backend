@@ -1,5 +1,5 @@
-import { Message } from "../models/message.model.js";
-
+import { Message } from '../models/message.model.js';
+import logger from '../utils/logger.js';
 // 1. Ruta POST para enviar un mensaje add message
 //router.post("/flats/:id", addMessage);
 ////////// Función para enviar un mensaje
@@ -11,8 +11,13 @@ const addMessage = async (req, res, next) => {
 
     // Validar los campos requeridos (considerar agregar una biblioteca de validación)
     if (!sender || !flat || !content) {
+      logger.warning('Faltan campos obligatorios: sender, flat, contenido', {
+        sender,
+        flat,
+        content,
+      });
       return res.status(400).json({
-        message: "Faltan campos obligatorios: sender, flat, contenido",
+        error: 'Faltan campos obligatorios: sender, flat, contenido',
       });
     }
 
@@ -25,10 +30,11 @@ const addMessage = async (req, res, next) => {
     // Responder con un mensaje de éxito y los datos del mensaje guardado
     res
       .status(201)
-      .json({ message: "Mensaje enviado exitosamente", data: newMessage });
+      .json({ message: 'Mensaje enviado exitosamente', data: newMessage });
   } catch (error) {
-    // Mensaje error
-    console.error("Error al enviar el mensaje:", error.message);
+    logger.error('Error al enviar el mensaje:', {
+      error: error.message,
+    });
     next(error); // Pasar el error al middleware de manejo de errores
   }
 };
@@ -45,8 +51,11 @@ const getAllMessages = async (req, res, next) => {
 
     res.status(200).json(messages);
   } catch (error) {
-    console.error("Error al obtener los mensajes:", next(error));
-    res.status(500).json({ message: "Error al obtener los mensajes" });
+    logger.error('Error al obtener los mensajes:', {
+      error: error.message,
+    });
+    res.status(500).json({ message: 'Error al obtener los mensajes' });
+    next(error);
   }
 };
 
@@ -65,16 +74,17 @@ const getUserMessages = async (req, res, next) => {
     }
 
     // Obtener los mensajes de la base de datos
-    const messages = await Message.find(filters).populate("flat", "sender");
+    const messages = await Message.find(filters).populate('flat', 'sender');
 
     // Responder con los mensajes recuperados
     res.status(200).json(messages);
   } catch (error) {
-    // Manejar errores de forma elegante
-    console.error("Error al obtener los mensajes:", error.message);
+    logger.error('Error al obtener los mensajes', {
+      error: error.message,
+    });
     next(error); // Pasar el error al middleware de manejo de errores
   }
 };
 
 // Exportar las funciones para su uso en el router
-export { addMessage, getUserMessages, getAllMessages };
+export { addMessage, getAllMessages, getUserMessages };

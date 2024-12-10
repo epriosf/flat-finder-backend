@@ -27,31 +27,37 @@ const flatSchema = new mongoose.Schema(
     areaSize: {
       type: Number,
       required: [true, 'areaSize is required'],
-      trim: true,
       min: [10, 'Area size must be at least 10 square meters.'],
     },
     hasAc: {
       type: Boolean,
       required: [true, 'hasAc is required'],
+      default: false,
     },
     yearBuilt: {
       type: Number,
       required: [true, 'yearBuilt is required'],
+      min: [1980, 'Year built must be after 1980.'],
+      max: [new Date().getFullYear(), 'Year built cannot be in the future.'],
     },
     rentPrice: {
       type: Number,
       required: [true, 'rentPrice is required'],
-      trim: true,
       min: [0, 'Rent price must be a positive number.'],
     },
     dateAvailable: {
       type: [Date],
       validate: {
         validator: function (value) {
-          return value.length === 2;
+          return (
+            value.length === 2 &&
+            value[0] instanceof Date &&
+            value[1] instanceof Date &&
+            value[0] < value[1]
+          );
         },
         message:
-          'dateAvailable must contain exactly two dates (initial and final).',
+          'dateAvailable must contain exactly two dates and the initial date must be earlier than the final date',
       },
     },
     ownerId: {
@@ -67,9 +73,10 @@ const flatSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-// Middleware for updated field
-flatSchema.pre('save', async function (next) {
-  this.updated = new Date();
-  next();
-});
+flatSchema.statics.findActive = function () {
+  return this.find({ deleted: null });
+};
+flatSchema.methods.isDeleted = function () {
+  return this.deleted !== null;
+};
 export const Flat = mongoose.model('Flat', flatSchema);

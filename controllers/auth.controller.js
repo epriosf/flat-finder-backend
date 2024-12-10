@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { User } from '../models/user.model.js';
 import sendEmail from '../utils/email.js';
 import logger from '../utils/logger.js';
-import { loginSchema, registerSchema } from '../utils/user.validator.js';
+import { loginSchema, registerSchema } from './../validators/user.validator.js';
 const register = async (req, res) => {
   try {
     const validatedBody = await registerSchema.validateAsync(req.body);

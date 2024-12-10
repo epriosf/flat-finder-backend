@@ -1,9 +1,14 @@
 import mongoose from 'mongoose';
-import { buildFilters } from '../utils/filterBuilder.js';
-import { flatSchema } from '../utils/flat.validator.js';
-import { flatSaveSchema } from '../utils/flatSave.validator.js';
+import {
+  deleteFlatService,
+  getFlatByIdService,
+  getFlatsService,
+  saveFlatService,
+  updateFlatService,
+} from '../services/flat.service.js';
 import logger from '../utils/logger.js';
-import { Flat } from './../models/flat.model.js';
+import { flatSaveSchema, flatSchema } from '../validators/flat.vallidator.js';
+
 const getFlats = async (req, res, next) => {
   try {
     // Validate query parameters
@@ -14,31 +19,12 @@ const getFlats = async (req, res, next) => {
         .status(400)
         .json({ message: `Invalid query parameters: ${error.message}` });
     }
-    // Filters
-    const filters = { ...buildFilters(query), deleted: { $eq: null } };
-    //Sorting
-    const sort = { [query.sort]: query.order === 'desc' ? -1 : 1 };
 
-    const skip = (query.page - 1) * query.limit;
-
-    const flats = await Flat.find(filters)
-      .populate('ownerId')
-      .sort(sort)
-      .skip(skip)
-      .limit(query.limit);
-
-    const totalFlats = await Flat.countDocuments(filters);
+    const { flats, pagination } = await getFlatsService(query);
 
     res.status(200).json({
       data: flats,
-      pagination: {
-        total: totalFlats,
-        limit: query.limit,
-        page: query.page,
-        totalPages: Math.ceil(totalFlats / query.limit),
-        hasNextPage: query.page * query.limit < totalFlats,
-        hasPreviousPage: query.page > 1,
-      },
+      pagination,
     });
   } catch (error) {
     logger.error(`Error fetching flats: ${error.message}`);
@@ -49,7 +35,7 @@ const getFlatById = async (req, res, next) => {
   const { id } = req.params;
 
   try {
-    const flat = await Flat.findOne({ _id: id, deleted: { $eq: null } });
+    const flat = await getFlatByIdService(id);
 
     if (!flat) {
       logger.warning(`Flat not found with ID: ${id}`);
@@ -65,12 +51,15 @@ const getFlatById = async (req, res, next) => {
 
 const saveFlat = async (req, res, next) => {
   try {
+    //validate schema
     const { error } = flatSaveSchema.validate(req.body);
     if (error) {
+      logger.warning(`Validation error for saveFlat: ${error.message}`);
       return res.status(400).json({ message: error.message });
     }
-    const newFlat = new Flat(req.body);
-    await newFlat.save();
+    //service
+    const newFlat = await saveFlatService(req.body);
+    logger.info(`Flat created successfully with ID: ${newFlat._id}`);
     res
       .status(201)
       .json({ message: 'Flat created successfully', data: newFlat });
@@ -89,20 +78,14 @@ const updateFlat = async (req, res, next) => {
       return res.status(400).json({ message: 'Cannot update ownerId' });
     }
 
-    const updatedFlat = await Flat.findOneAndUpdate(
-      { _id: id, deleted: { $eq: null } },
-      flatData,
-      { new: true }
-    );
+    const { updatedFlat, message } = await updateFlatService(id, flatData);
 
     if (!updatedFlat) {
       logger.warning(`Flat not found for update with ID: ${id}`);
-      return res.status(404).json({ message: 'Flat not found' });
+      return res.status(404).json({ message });
     }
 
-    res
-      .status(200)
-      .json({ message: 'Flat updated successfully', data: updatedFlat });
+    res.status(200).json({ message, data: updatedFlat });
   } catch (error) {
     logger.error(`Error updating flat with ID: ${id}, Error: ${error.message}`);
     next(error);
@@ -110,20 +93,14 @@ const updateFlat = async (req, res, next) => {
 };
 
 const deleteFlat = async (req, res, next) => {
-  console.log('Request params:', req.params);
   const { id } = req.params;
 
-  // Validate id
   if (!id || !mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ message: 'Invalid or missing flat ID' });
   }
 
   try {
-    const deletedFlat = await Flat.findOneAndUpdate(
-      { _id: id, deleted: { $eq: null } },
-      { deleted: new Date() },
-      { new: true }
-    );
+    const deletedFlat = await deleteFlatService(id);
 
     if (!deletedFlat) {
       logger.warning(`Flat not found or already deleted with ID: ${id}`);
@@ -131,6 +108,7 @@ const deleteFlat = async (req, res, next) => {
         .status(404)
         .json({ message: 'Flat not found or already deleted' });
     }
+    logger.info(`Flat deleted successfully with ID: ${id}`);
 
     res
       .status(200)

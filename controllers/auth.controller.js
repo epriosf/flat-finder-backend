@@ -31,7 +31,7 @@ const login = async (req, res) => {
     //2.- Vamos a buscar el usuario en la BDD, si no existe vamos a retornar un 404
     const user = await User.findOne({ email });
     if (!user) {
-      logger.warn('Login failed: User not found', { email });
+      logger.warning('Login failed: User not found', { email });
       return res.status(404).json({ message: 'User not found' });
     }
     //3.- Vamos a comparar la contraseña que viene en el request con la contraseña hasheada que tenemos en la BDD

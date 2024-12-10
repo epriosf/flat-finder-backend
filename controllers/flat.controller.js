@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { buildFilters } from '../utils/filterBuilder.js';
 import { flatSchema } from '../utils/flat.validator.js';
 import { flatSaveSchema } from '../utils/flatSave.validator.js';
@@ -109,7 +110,13 @@ const updateFlat = async (req, res, next) => {
 };
 
 const deleteFlat = async (req, res, next) => {
+  console.log('Request params:', req.params);
   const { id } = req.params;
+
+  // Validate id
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid or missing flat ID' });
+  }
 
   try {
     const deletedFlat = await Flat.findOneAndUpdate(
@@ -124,6 +131,7 @@ const deleteFlat = async (req, res, next) => {
         .status(404)
         .json({ message: 'Flat not found or already deleted' });
     }
+
     res
       .status(200)
       .json({ message: 'Flat deleted successfully', data: deletedFlat });
@@ -134,4 +142,3 @@ const deleteFlat = async (req, res, next) => {
 };
 
 export { deleteFlat, getFlatById, getFlats, saveFlat, updateFlat };
-

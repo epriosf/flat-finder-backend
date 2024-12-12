@@ -2,16 +2,16 @@ import logger from '../utils/logger.js';
 
 export const verifySender = async (req, res, next) => {
   try {
-    const { senderId } = req.query;
+    const { sender } = req.params;
     const userId = req.user.user_id;
 
-    if (!senderId) {
+    if (!sender) {
       return res.status(400).json({ message: 'Sender ID is required' });
     }
 
-    if (senderId !== userId.toString()) {
+    if (sender !== userId.toString()) {
       logger.warning('Unauthorized access attempt', {
-        senderId,
+        sender,
         userId,
       });
       return res

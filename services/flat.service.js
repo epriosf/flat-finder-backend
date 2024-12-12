@@ -1,5 +1,5 @@
 import { Flat } from '../models/flat.model.js';
-import { buildFilters } from '../utils/filterBuilder.js';
+import { buildFlatFilters } from '../utils/filterBuilder.js';
 
 export const saveFlatService = async (flatData) => {
   const flat = new Flat(flatData);
@@ -41,7 +41,7 @@ export const deleteFlatService = async (id) => {
 };
 export const getFlatsService = async (query) => {
   // Filters
-  const filters = { ...buildFilters(query), deleted: { $eq: null } };
+  const filters = { ...buildFlatFilters(query), deleted: { $eq: null } };
   //Sorting
   const sort = { [query.sort]: query.order === 'desc' ? -1 : 1 };
 

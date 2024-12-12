@@ -2,7 +2,6 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import mongoose from 'mongoose';
 
-//definir el schema de la base de datos para la coleccion de usuarios
 const userSchema = new mongoose.Schema(
   {
     email: {
@@ -41,7 +40,6 @@ const userSchema = new mongoose.Schema(
     deleted: {
       type: Date,
     },
-    //El proyecto pide un borrado fisico, pero mejor es hacer un borrado logico
 
     role: {
       type: String,
@@ -57,9 +55,15 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+userSchema.statics.findActive = function () {
+  return this.find({ deleted: null });
+};
+userSchema.methods.isDeleted = function () {
+  return this.deleted !== null;
+};
 
 userSchema.pre('save', async function (next) {
-  const user = this; //this -> es el objeto que estamos guardando en BDD
+  const user = this;
   try {
     if (user.isModified('password')) {
       const salt = await bcrypt.genSalt(10);

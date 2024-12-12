@@ -1,5 +1,5 @@
 import Joi from 'joi';
-
+import mongoose from 'mongoose';
 const registerSchema = Joi.object({
   email: Joi.string()
     .email()
@@ -24,6 +24,23 @@ const registerSchema = Joi.object({
   }),
   isAdmin: Joi.boolean().optional(),
   role: Joi.string().valid('admin', 'user').optional().default('user'),
+  favouriteFlats: Joi.array()
+    .items(
+      Joi.string()
+        .custom((value, helpers) => {
+          if (!mongoose.Types.ObjectId.isValid(value)) {
+            return helpers.error('any.invalid', { value });
+          }
+          return value;
+        })
+        .messages({
+          'any.invalid': 'Each favouriteFlat must be a valid ObjectId.',
+        })
+    )
+    .optional()
+    .messages({
+      'array.base': 'Favourite flats must be an array.',
+    }),
 });
 const loginSchema = Joi.object({
   email: Joi.string().required(),

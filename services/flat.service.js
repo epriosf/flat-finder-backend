@@ -48,7 +48,7 @@ export const getFlatsService = async (query) => {
   const skip = (query.page - 1) * query.limit;
 
   const flats = await Flat.find(filters)
-    .populate('ownerId')
+    .select('-deleted -createdAt -updatedAt -__v')
     .sort(sort)
     .skip(skip)
     .limit(query.limit);

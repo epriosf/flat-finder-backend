@@ -26,37 +26,46 @@ const login = async (req, res) => {
       });
       return res.status(400).json({ message: error.details[0].message });
     }
-    //1.- Vamos a obtener las credenciales (username, password) del request
     const { email, password } = req.body;
-    //2.- Vamos a buscar el usuario en la BDD, si no existe vamos a retornar un 404
+
     const user = await User.findOne({ email });
-    if (!user) {
-      logger.warning('Login failed: User not found', { email });
-      return res.status(404).json({ message: 'User not found' });
-    }
-    //3.- Vamos a comparar la contraseña que viene en el request con la contraseña hasheada que tenemos en la BDD
-    const passwordsMatch = await user.comparePasswords(password);
-    //4.- Si las contraseñas no coinciden, vamos a retornar un 401
-    if (!passwordsMatch) {
+    if (!user || !(await user.comparePasswords(password))) {
       logger.warning('Login failed: Invalid credentials', { email });
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
-    //5.- Si las contraseñas coinciden, vamos a generar un token JWT y lo vamos a retornar en la respuesta
-    // El metodo sign lo que hace es firmar nuestro jwt (token), la firma del token sirve para poder validar
-    // que el token no ha sido modificado por un tercero
-    // EL primer parametro que vamos a enviar en el metodo es un objeto que contiene la informacion del usuario
-    // FSHGAFGJDFG%JSDFK/(435345) -> Informacion del usuario
+
     const token = await jwt.sign(
-      { user_id: user._id, role: user.role },
+      { user_id: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       {
         expiresIn: '1h',
       }
     );
-    res.status(200).json({ token });
+    res
+      .cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+      })
+      .status(200)
+      .json({ message: 'Login successful' });
   } catch (error) {
     logger.error('Error during login', { error: error.message });
     res.status(500).json({ message: error.message });
+  }
+};
+const me = async (req, res) => {
+  if (req.user) {
+    res.json(req.user);
+  } else {
+    res.status(401).json({ error: 'Unauthorized' });
+  }
+};
+const logout = async (req, res) => {
+  try {
+    res.clearCookie('token').status(200).json({ message: 'Logout successful' });
+  } catch (error) {
+    res.status(500).json({ message: `Error logging out ${error}` });
   }
 };
 
@@ -141,4 +150,4 @@ const resetPassword = async (req, res) => {
   }
 };
 
-export { forgotPassword, login, register, resetPassword };
+export { forgotPassword, login, logout, me, register, resetPassword };

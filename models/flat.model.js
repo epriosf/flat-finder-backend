@@ -74,7 +74,11 @@ const flatSchema = new mongoose.Schema(
   { timestamps: true }
 );
 flatSchema.statics.findActive = function () {
-  return this.find({ deleted: null });
+  return this.find({ deleted: null })
+    .select(
+      'city streetName streetNumber areaSize hasAc yearBuilt rentPrice dateAvailable deleted ownerId'
+    )
+    .populate('ownerId', '_id');
 };
 flatSchema.methods.isDeleted = function () {
   return this.deleted !== null;

@@ -19,7 +19,7 @@ import userRoutes from './routes/user.router.js';
 const app = express();
 
 const corsOptions = {
-  origin: 'http://localhost:5173', // Allow only your frontend's origin
+  origin: process.env.FRONT_END_URL, // Allow only your frontend's origin
   credentials: true, // Allow cookies and credentials
 };
 

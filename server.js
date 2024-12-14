@@ -10,6 +10,7 @@ import express from 'express';
 import { connectDB } from './db/db.js';
 import authenticationMiddleware from './middlewares/authentication.middleware.js';
 import errorHandler from './middlewares/errorHandler.js';
+import loginRateLimiter from './middlewares/rateLimit.middleware.js';
 import authRoutes from './routes/auth.router.js';
 import flatRoutes from './routes/flat.router.js';
 import logsRoutes from './routes/logs.router.js';
@@ -17,8 +18,14 @@ import messagesRoutes from './routes/message.router.js';
 import userRoutes from './routes/user.router.js';
 const app = express();
 
+const corsOptions = {
+  origin: 'http://localhost:5173', // Allow only your frontend's origin
+  credentials: true, // Allow cookies and credentials
+};
+
+app.use(cors(corsOptions));
+//app.use(cors());
 app.use(express.json());
-app.use(cors());
 connectDB();
 
 // Root route for testing
@@ -29,7 +36,7 @@ app.get('/', (req, res) => {
 app.use('/flats', authenticationMiddleware, flatRoutes);
 app.use('/messages', authenticationMiddleware, messagesRoutes);
 app.use('/users', authenticationMiddleware, userRoutes);
-app.use('/auth', authRoutes);
+app.use('/auth', loginRateLimiter, authRoutes);
 app.use('/logs', logsRoutes);
 
 //Middleware for error handling

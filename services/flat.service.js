@@ -49,6 +49,7 @@ export const getFlatsService = async (query) => {
 
   const flats = await Flat.find(filters)
     .select('-deleted -createdAt -updatedAt -__v')
+    .populate('ownerId', '_id email firstName lastName isAdmin role')
     .sort(sort)
     .skip(skip)
     .limit(query.limit);

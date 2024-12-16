@@ -41,24 +41,26 @@ const login = async (req, res) => {
         expiresIn: '1h',
       }
     );
-    res
-      .cookie('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Strict',
-      })
-      .status(200)
-      .json({ message: 'Login successful' });
+    res.status(200).json({ token });
   } catch (error) {
     logger.error('Error during login', { error: error.message });
     res.status(500).json({ message: error.message });
   }
 };
 const me = async (req, res) => {
-  if (req.user) {
-    res.json(req.user);
-  } else {
-    res.status(401).json({ error: 'Unauthorized' });
+  try {
+    // Fetch the user from the database using the userId from the token
+    const user = await User.findById(req.user.user_id).select(
+      '-password -deletedAt -createdAt -updatedAt -__v'
+    );
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 const logout = async (req, res) => {

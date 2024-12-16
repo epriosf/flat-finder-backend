@@ -53,10 +53,13 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
   },
+
   { timestamps: true }
 );
 userSchema.statics.findActive = function () {
-  return this.find({ deleted: null });
+  return this.find({ deleted: null }).select(
+    '-deleted -deletedAt -createdAt -updatedAt -__v -resetPasswordToken -resetPasswordExpires'
+  );
 };
 userSchema.methods.isDeleted = function () {
   return this.deleted !== null;

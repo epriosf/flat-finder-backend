@@ -68,7 +68,7 @@ const flatSaveSchema = Joi.object({
     .required()
     .messages({
       'string.pattern.base': 'Owner ID must be a valid ObjectId',
-    }), // Valid ObjectId
+    }),
 }).unknown(false);
 
 export { flatSaveSchema, flatSchema };

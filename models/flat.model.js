@@ -70,15 +70,25 @@ const flatSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    rooms: {
+      type: Number,
+      required: [true, 'Rooms are required'],
+      min: [1, 'There must be at least one room'],
+    },
+    bathrooms: {
+      type: Number,
+      required: [true, 'Bathrooms are required'],
+      min: [1, 'There must be at least one bathroom'],
+    },
   },
   { timestamps: true }
 );
 flatSchema.statics.findActive = function () {
   return this.find({ deleted: null })
     .select(
-      'city streetName streetNumber areaSize hasAc yearBuilt rentPrice dateAvailable deleted ownerId'
+      '_id city streetName streetNumber areaSize hasAc yearBuilt rentPrice dateAvailable ownerId rooms bathrooms'
     )
-    .populate('ownerId', '_id');
+    .populate('ownerId', 'email');
 };
 flatSchema.methods.isDeleted = function () {
   return this.deleted !== null;

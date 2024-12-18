@@ -21,6 +21,10 @@ const flatSchema = Joi.object({
 });
 
 const flatSaveSchema = Joi.object({
+  name: Joi.string().trim().min(3).required().messages({
+    'string.empty': 'Flat name is required',
+    'string.min': 'Flat name must be at least 3 characters',
+  }),
   city: Joi.string().trim().lowercase().required().messages({
     'string.empty': 'City is required',
   }),
@@ -62,13 +66,20 @@ const flatSaveSchema = Joi.object({
       return [start, end];
     })
     .required(),
-  ownerId: Joi.string()
-    .regex(/^[0-9a-fA-F]{24}$/)
-    .trim()
-    .required()
-    .messages({
-      'string.pattern.base': 'Owner ID must be a valid ObjectId',
-    }),
+  rooms: Joi.number().integer().min(1).required().messages({
+    'number.base': 'Rooms must be a number',
+    'number.min': 'Rooms must be at least 1',
+    'any.required': 'Rooms are required',
+  }),
+  bathrooms: Joi.number().integer().min(1).required().messages({
+    'number.base': 'Bathrooms must be a number',
+    'number.min': 'Bathrooms must be at least 1',
+    'any.required': 'Bathrooms are required',
+  }),
+  flatImage: Joi.string().uri().optional().messages({
+    'string.uri': 'Flat image must be a valid URL',
+    'string.empty': 'Flat image URL cannot be empty',
+  }),
 }).unknown(false);
 
 export { flatSaveSchema, flatSchema };

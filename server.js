@@ -17,9 +17,21 @@ import logsRoutes from './routes/logs.router.js';
 import messagesRoutes from './routes/message.router.js';
 import userRoutes from './routes/user.router.js';
 const app = express();
-
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'http://localhost:5173', // Production frontend
+  'http://localhost:3000', // Your local frontend during development
+];
 const corsOptions = {
-  origin: 'http://localhost:5173', // Allow only your frontend's origin
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g., mobile apps or Postman)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true, // Allow cookies and credentials
 };
 

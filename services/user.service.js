@@ -40,27 +40,61 @@ export const deleteUserService = async (id) => {
   return user;
 };
 export const getUsersService = async (query) => {
-  // Filters
+  // Filters for users
   const filters = { ...buildUserFilters(query), deleted: { $eq: null } };
-  //Sorting
-  const sort = { [query.sort]: query.order === 'desc' ? -1 : 1 };
 
-  const skip = (query.page - 1) * query.limit;
+  // Sorting
+  const sort = query.sort
+    ? { [query.sort]: query.order === 'desc' ? -1 : 1 }
+    : {};
 
-  const users = await User.find(filters)
-    .populate('favouriteFlats')
-    .sort(sort)
-    .skip(skip)
-    .limit(query.limit);
-  const totalFlats = await User.countDocuments(filters);
-  //pagination
+  const limit = parseInt(query.limit, 10) || 10;
+  const page = parseInt(query.page, 10) || 1;
+  const skip = (page - 1) * limit;
+
+  // Fetch users and count their flats using aggregation
+  const users = await User.aggregate([
+    { $match: filters },
+    {
+      $lookup: {
+        from: 'flats',
+        localField: '_id',
+        foreignField: 'ownerId',
+        as: 'flats',
+      },
+    },
+    {
+      $addFields: {
+        flatsCount: { $size: '$flats' },
+      },
+    },
+    {
+      $project: {
+        flats: 0,
+        password: 0,
+        __v: 0,
+        createdAt: 0,
+        updatedAt: 0, // Exclude updatedAt
+        deletedAt: 0, // Exclude deletedAt
+      },
+    },
+    { $sort: sort }, // Apply sorting
+    { $skip: skip }, // Apply pagination skip
+    { $limit: limit }, // Apply pagination limit
+  ]);
+
+  // Total count of users
+  const totalUsers = await User.countDocuments(filters);
+
+  // Pagination info
   const pagination = {
-    total: totalFlats,
-    limit: query.limit,
-    page: query.page,
-    totalPages: Math.ceil(totalFlats / query.limit),
-    hasNextPage: query.page * query.limit < totalFlats,
-    hasPreviousPage: query.page > 1,
+    total: totalUsers,
+    limit,
+    page,
+    totalPages: Math.ceil(totalUsers / limit),
+    hasNextPage: page * limit < totalUsers,
+    hasPreviousPage: page > 1,
   };
+
   return { users, pagination };
 };

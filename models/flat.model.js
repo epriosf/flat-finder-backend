@@ -2,12 +2,19 @@ import mongoose from 'mongoose';
 
 const flatSchema = new mongoose.Schema(
   {
+    name: {
+      type: String,
+      required: [true, 'FlatName is required'],
+      unique: true,
+      trim: true,
+      minlength: [3, 'Flat name must have at least 3 characters.'],
+    },
     city: {
       type: String,
       required: [true, 'city is required'],
-      unique: true,
       trim: true,
       lowercase: true,
+      minlength: [3, 'city must have at least 3 characters.'],
     },
     streetName: {
       type: String,
@@ -80,13 +87,18 @@ const flatSchema = new mongoose.Schema(
       required: [true, 'Bathrooms are required'],
       min: [1, 'There must be at least one bathroom'],
     },
+    flatImage: {
+      type: String,
+      trim: true,
+      required: [true, 'Flat image is required'],
+    },
   },
   { timestamps: true }
 );
 flatSchema.statics.findActive = function () {
   return this.find({ deleted: null })
     .select(
-      '_id city streetName streetNumber areaSize hasAc yearBuilt rentPrice dateAvailable ownerId rooms bathrooms'
+      '_id name city streetName streetNumber areaSize hasAc yearBuilt rentPrice dateAvailable ownerId rooms bathrooms flatImage'
     )
     .populate('ownerId', 'email');
 };

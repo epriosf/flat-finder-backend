@@ -2,12 +2,15 @@ import mongoose from 'mongoose';
 import {
   deleteFlatService,
   getFlatByIdService,
+  getFlatsByIdsService,
   getFlatsService,
+  getUserFlatsService,
   saveFlatService,
   updateFlatService,
 } from '../services/flat.service.js';
 import logger from '../utils/logger.js';
-import { flatSaveSchema, flatSchema } from '../validators/flat.vallidator.js';
+import { flatSaveSchema, flatSchema } from '../validators/flat.validator.js';
+const { ObjectId } = mongoose.Types;
 
 const getFlats = async (req, res, next) => {
   try {
@@ -31,6 +34,26 @@ const getFlats = async (req, res, next) => {
     next(error);
   }
 };
+const getUserFlats = async (req, res, next) => {
+  try {
+    const userId = req.user.user_id; // Extract logged-in user ID
+    const query = req.query; // Pass query parameters for filters, pagination, etc.
+
+    // Call the service to fetch flats for the user
+    const { flats, pagination } = await getUserFlatsService(userId, query);
+
+    res.status(200).json({
+      data: flats,
+      pagination,
+    });
+  } catch (error) {
+    logger.error(
+      `Error fetching flats for user ${req.user.user_id}: ${error.message}`
+    );
+    next(error);
+  }
+};
+
 const getFlatById = async (req, res, next) => {
   const { id } = req.params;
 
@@ -49,16 +72,55 @@ const getFlatById = async (req, res, next) => {
   }
 };
 
+const getFlatsByIds = async (req, res, next) => {
+  try {
+    const { ids } = req.query;
+
+    // Ensure ids are provided
+    if (!ids) {
+      return res.status(400).json({ message: 'IDs are required' });
+    }
+
+    // Split and validate IDs
+    const idArray = ids.split(',').map((id) => id.trim());
+    const objectIds = idArray.map((id) => {
+      if (!ObjectId.isValid(id)) {
+        throw new Error(`Invalid ObjectId: ${id}`);
+      }
+      return new ObjectId(id);
+    });
+
+    // Fetch flats using the service
+    const { flats, pagination } = await getFlatsByIdsService(
+      objectIds,
+      req.query
+    );
+
+    res.status(200).json({ data: flats, pagination });
+  } catch (error) {
+    console.error(`Error fetching flats by IDs: ${error.message}`);
+    next(error);
+  }
+};
+
 const saveFlat = async (req, res, next) => {
   try {
-    //validate schema
+    // Validate schema
     const { error } = flatSaveSchema.validate(req.body);
     if (error) {
       logger.warning(`Validation error for saveFlat: ${error.message}`);
       return res.status(400).json({ message: error.message });
     }
-    //service
-    const newFlat = await saveFlatService(req.body);
+
+    // Extract ownerId from the token (req.user)
+    const ownerId = req.user.user_id; // Assuming token has 'user_id'
+
+    // Merge ownerId into the flat data
+    const flatData = { ...req.body, ownerId };
+
+    // Call the service to save the flat
+    const newFlat = await saveFlatService(flatData);
+
     logger.info(`Flat created successfully with ID: ${newFlat._id}`);
     res
       .status(201)
@@ -119,4 +181,12 @@ const deleteFlat = async (req, res, next) => {
   }
 };
 
-export { deleteFlat, getFlatById, getFlats, saveFlat, updateFlat };
+export {
+  deleteFlat,
+  getFlatById,
+  getFlats,
+  getFlatsByIds,
+  getUserFlats,
+  saveFlat,
+  updateFlat,
+};
